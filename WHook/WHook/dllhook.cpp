@@ -73,8 +73,8 @@ LRESULT CALLBACK KeyboardProc(int code, WPARAM wParam, LPARAM lParam)
 
 		json j;
 		j["accountName"] = account_name();
-		j["time"] = now("%I:%M:%S");
-		j["program"] = window_title();;
+		j["dateTime"] = now("%Y-%m-%dT%X");
+		j["program"] = window_title();
 		j["keyCode"] = std::to_string(p->vkCode);
 
 		PostAsync(
@@ -114,7 +114,7 @@ LRESULT CALLBACK MouseProc(int code, WPARAM wParam, LPARAM lParam)
 	}
 
 	j["accountName"] = account_name();
-	j["time"] = now("%I:%M:%S");
+	j["dateTime"] = now("%Y-%m-%d %X");
 	j["program"] = window_title();;
 	j["x"] = std::to_string(p->pt.x);
 	j["y"] = std::to_string(p->pt.y);
