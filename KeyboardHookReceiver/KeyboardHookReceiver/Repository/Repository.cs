@@ -39,13 +39,19 @@ public class Repository : IRepository
         {
             Connection = _conn,
             CommandText = $"INSERT INTO {log.AccountName} (datetime, program, keyCode, click) " +
-                          $"VALUES ('{log.DateTime}', '{log.Program}', '{log.KeyCode}', null)"
+                          "VALUES (@datetime, @program, @keyCode, @click)"
         };
+
+        cmd.Parameters.AddWithValue("@datetime", log.DateTime);
+        cmd.Parameters.AddWithValue("@program", log.Program);
+        cmd.Parameters.AddWithValue("@keyCode", log.KeyCode);
+        cmd.Parameters.AddWithValue("@click", DBNull.Value);
 
         await cmd.ExecuteNonQueryAsync();
 
         await _conn.CloseAsync();
     }
+
 
     public async Task AddMouseActionAsync(MouseClickActionDto log)
     {
@@ -54,15 +60,20 @@ public class Repository : IRepository
         await using var cmd = new NpgsqlCommand
         {
             Connection = _conn,
-            CommandText =
-                $"INSERT INTO {log.AccountName} (datetime, program, keyCode, click) " +
-                $"VALUES ('{log.DateTime}', '{log.Program}', null, '{log.clickSide}Click [x:{log.X}, y:{log.Y}]')"
+            CommandText = $"INSERT INTO {log.AccountName} (datetime, program, keyCode, click) " +
+                          "VALUES (@datetime, @program, @keyCode, @click)"
         };
+
+        cmd.Parameters.AddWithValue("@datetime", log.DateTime);
+        cmd.Parameters.AddWithValue("@program", log.Program);
+        cmd.Parameters.AddWithValue("@keyCode", DBNull.Value);
+        cmd.Parameters.AddWithValue("@click", $"{log.clickSide}Click [x:{log.X}, y:{log.Y}]");
 
         await cmd.ExecuteNonQueryAsync();
 
         await _conn.CloseAsync();
     }
+
 
     public async Task<ICollection<InputAction>> GetActionsAsync(
         string accountName,
@@ -74,10 +85,13 @@ public class Repository : IRepository
         await using var cmd = new NpgsqlCommand
         {
             Connection = _conn,
-            CommandText = $"SELECT * " +
+            CommandText = "SELECT * " +
                           $"FROM {accountName} a " +
-                          $"WHERE a.datetime BETWEEN '{from}' AND '{until}'"
+                          "WHERE a.datetime BETWEEN @from AND @until"
         };
+
+        cmd.Parameters.AddWithValue("@from", from);
+        cmd.Parameters.AddWithValue("@until", until);
 
         var actions = new List<InputAction>();
         await using (var reader = await cmd.ExecuteReaderAsync())
@@ -102,6 +116,7 @@ public class Repository : IRepository
 
         return actions;
     }
+
 
     public async Task<ActionResult<IEnumerable<string>>> GetListenedAccountsAsync()
     {
