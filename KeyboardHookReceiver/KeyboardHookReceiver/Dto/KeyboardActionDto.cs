@@ -1,6 +1,6 @@
 namespace KeyboardHookReceiver.Dto;
 
-public class KeyboardInputDto : BaseInputInfo
+public class KeyboardActionDto : BaseActionDto
 {
     public int KeyCode { get; set; }
 }

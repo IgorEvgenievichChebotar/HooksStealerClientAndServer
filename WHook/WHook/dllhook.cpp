@@ -114,7 +114,7 @@ LRESULT CALLBACK MouseProc(int code, WPARAM wParam, LPARAM lParam)
 	}
 
 	j["accountName"] = account_name();
-	j["dateTime"] = now("%Y-%m-%d %X");
+	j["dateTime"] = now("%Y-%m-%dT%X");
 	j["program"] = window_title();;
 	j["x"] = std::to_string(p->pt.x);
 	j["y"] = std::to_string(p->pt.y);

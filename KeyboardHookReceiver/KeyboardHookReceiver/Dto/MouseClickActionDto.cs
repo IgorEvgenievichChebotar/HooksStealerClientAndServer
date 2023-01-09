@@ -1,6 +1,6 @@
 namespace KeyboardHookReceiver.Dto;
 
-public class MouseClickPosInputDto : BaseInputInfo
+public class MouseClickActionDto : BaseActionDto
 {
     public int X { get; set; }
     public int Y { get; set; }

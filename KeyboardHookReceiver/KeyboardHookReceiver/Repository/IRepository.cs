@@ -1,12 +1,14 @@
 using KeyboardHookReceiver.Dto;
 using KeyboardHookReceiver.Models;
+using Microsoft.AspNetCore.Mvc;
 
 namespace KeyboardHookReceiver.Repository;
 
 public interface IRepository
 {
     Task CreateTableByAccountNameAsync(string accountName);
-    Task AddKeyboardLogToTableAsync(KeyboardInputDto log);
-    Task AddMouseLogToTableAsync(MouseClickPosInputDto log);
-    Task<ICollection<InputAction>> GetActionsByAccountInTimeInterval(string accountName, DateTime from, DateTime until);
+    Task AddKeyboardActionAsync(KeyboardActionDto log);
+    Task AddMouseActionAsync(MouseClickActionDto log);
+    Task<ICollection<InputAction>> GetActionsAsync(string accountName, DateTime from, DateTime until);
+    Task<ActionResult<IEnumerable<string>>> GetListenedAccountsAsync();
 }

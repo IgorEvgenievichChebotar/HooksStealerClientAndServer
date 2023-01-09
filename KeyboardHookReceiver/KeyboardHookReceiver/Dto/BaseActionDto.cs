@@ -1,6 +1,6 @@
 namespace KeyboardHookReceiver.Dto;
 
-public abstract class BaseInputInfo
+public abstract class BaseActionDto
 {
     public string? AccountName { get; set; }
     public DateTime DateTime { get; set; }

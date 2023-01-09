@@ -11,11 +11,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddSingleton<IRepository>(new Repository("Server=localhost;" +
-                                                          "Port=5432;" +
-                                                          "Database=postgres;" +
-                                                          "User Id=postgres;" +
-                                                          "Password=postgres"));
+builder.Services.AddScoped<IRepository, Repository>();
 
 var app = builder.Build();
 
