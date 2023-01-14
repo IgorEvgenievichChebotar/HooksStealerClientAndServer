@@ -20,7 +20,6 @@ public class ActionController : Controller
     {
         Console.WriteLine($"{json.DateTime} | {json.AccountName} pressed key[{json.KeyCode}] in {json.Program}");
 
-        await _repository.CreateTableByAccountNameAsync(json.AccountName!);
         await _repository.AddKeyboardActionAsync(json);
     }
 
@@ -30,12 +29,11 @@ public class ActionController : Controller
         Console.WriteLine(
             $"{json.DateTime} | {json.AccountName} {json.clickSide}Clicked at pos({json.X}, {json.Y}) in {json.Program}");
 
-        await _repository.CreateTableByAccountNameAsync(json.AccountName!);
         await _repository.AddMouseActionAsync(json);
     }
 
     [HttpGet, Route("/actions")]
-    public async Task<ActionResult<IEnumerable<InputAction>>> GetAccountActionsByTimeInterval(
+    public async Task<ActionResult<IEnumerable<InputAction>>> GetAccountActionsInTimeInterval(
         string account,
         DateTime from, DateTime until)
     {

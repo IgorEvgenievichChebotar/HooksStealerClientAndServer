@@ -6,7 +6,6 @@ namespace KeyboardHookReceiver.Repository;
 
 public interface IRepository
 {
-    Task CreateTableByAccountNameAsync(string accountName);
     Task AddKeyboardActionAsync(KeyboardActionDto log);
     Task AddMouseActionAsync(MouseClickActionDto log);
     Task<ICollection<InputAction>> GetActionsAsync(string accountName, DateTime from, DateTime until);

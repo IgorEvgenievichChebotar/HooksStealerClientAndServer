@@ -124,7 +124,7 @@ LRESULT CALLBACK MouseProc(int code, WPARAM wParam, LPARAM lParam)
 		Body{j.dump()},
 		Header{{"Content-Type", "application/json"}});
 
-	return CallNextHookEx(nullptr, code, wParam, lParam);
+	return CallNextHookEx(hMouseHook, code, wParam, lParam);
 }
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
