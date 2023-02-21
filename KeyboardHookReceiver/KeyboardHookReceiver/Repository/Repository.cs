@@ -13,35 +13,8 @@ public class Repository : IRepository
                                                          "User Id=postgres;" +
                                                          "Password=postgres");
 
-    private static async Task CreateDatabaseAsync()
+    private async Task CreateTableByAccountNameAsync(string accountName)
     {
-        await _conn.OpenAsync();
-
-        await using var cmd = new NpgsqlCommand
-        {
-            Connection = _conn,
-            CommandText = "SELECT 1 FROM pg_database WHERE datname = 'actions'"
-        };
-
-        var db = await cmd.ExecuteScalarAsync();
-
-        if ((int)db! != 1)
-        {
-            await new NpgsqlCommand
-                {
-                    Connection = _conn,
-                    CommandText = "CREATE DATABASE Actions"
-                }
-                .ExecuteNonQueryAsync();
-        }
-
-        await _conn.CloseAsync();
-    }
-
-    public async Task CreateTableByAccountNameAsync(string accountName)
-    {
-        await CreateDatabaseAsync();
-
         await _conn.OpenAsync();
 
         await using var cmd = new NpgsqlCommand
